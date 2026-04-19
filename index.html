@@ -1,0 +1,2767 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBG — Makan Bergizi Gratis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #f5f4f0;
+  --gray: #888;
+  --light-gray: #d0cfc9;
+  --accent: #c8f000;
+  --red: #ff3333;
+  --border: 1px solid rgba(245,244,240,0.15);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-serif: 'Instrument Serif', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--white); }
+
+/* ═══ TICKER ═══ */
+.ticker {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 28px;
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+.ticker-inner {
+  display: flex;
+  animation: ticker 28s linear infinite;
+  white-space: nowrap;
+}
+.ticker-item {
+  padding: 0 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.ticker-item span { color: var(--gray); }
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ═══ NAV ═══ */
+nav {
+  position: fixed;
+  top: 28px; left: 0; right: 0;
+  height: 56px;
+  background: rgba(10,10,10,0.95);
+  border-bottom: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 999;
+  backdrop-filter: blur(12px);
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.nav-logo:hover { opacity: 0.6; }
+.nav-logo span { color: var(--accent); }
+.nav-links {
+  display: flex;
+  gap: 0;
+  list-style: none;
+}
+.nav-links li a {
+  display: block;
+  padding: 8px 16px;
+  color: var(--gray);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.nav-links li a:hover,
+.nav-links li a.active { color: var(--white); }
+.nav-links li a.active {
+  border-bottom: 2px solid var(--accent);
+}
+.nav-actions { display: flex; align-items: center; gap: 12px; }
+.btn-login {
+  padding: 8px 20px;
+  background: var(--white);
+  color: var(--black);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-login:hover { background: var(--accent); }
+.online-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ═══ PAGES ═══ */
+.page {
+  min-height: 100vh;
+  padding-top: 84px;
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+.page.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ HOME PAGE ═══ */
+.hero {
+  padding: 80px 32px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: 'MBG';
+  position: absolute;
+  right: -40px;
+  top: 20px;
+  font-family: var(--font-display);
+  font-size: 300px;
+  color: rgba(255,255,255,0.03);
+  pointer-events: none;
+  line-height: 1;
+}
+.hero-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: slideIn 0.6s ease 0.1s both;
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 12vw, 160px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+  animation: slideIn 0.6s ease 0.2s both;
+}
+.hero-title .italic { font-family: var(--font-serif); font-style: italic; color: var(--light-gray); }
+.hero-sub {
+  max-width: 480px;
+  color: var(--gray);
+  line-height: 1.8;
+  animation: slideIn 0.6s ease 0.3s both;
+  margin-bottom: 48px;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: var(--border);
+  margin: 0 32px;
+  animation: slideIn 0.6s ease 0.5s both;
+}
+.stat-box {
+  padding: 32px 24px;
+  border-right: var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.stat-box:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--white);
+}
+.stat-num.accent { color: var(--accent); }
+.stat-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+/* Section containers */
+.section {
+  padding: 64px 32px;
+  border-top: var(--border);
+}
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.section-count {
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+}
+
+/* ═══ CATALOG / FRUIT CARDS ═══ */
+.fruit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.fruit-card {
+  background: var(--black);
+  padding: 28px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.fruit-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.fruit-card:hover { background: rgba(255,255,255,0.04); }
+.fruit-card:hover::before { transform: scaleX(1); }
+.fruit-emoji {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+  transition: transform 0.3s;
+}
+.fruit-card:hover .fruit-emoji { transform: scale(1.15) rotate(-5deg); }
+.fruit-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.fruit-latin {
+  font-size: 10px;
+  color: var(--gray);
+  font-style: italic;
+  margin-bottom: 16px;
+}
+.fruit-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.fruit-stock {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.stock-ok { color: var(--accent); }
+.stock-low { color: #ffaa00; }
+.stock-out { color: var(--red); }
+.fruit-price {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--white);
+}
+.fruit-price small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+}
+.stock-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  margin: 12px 0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stock-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: var(--gray);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(200,240,0,0.06);
+}
+
+/* Search bar */
+.search-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+}
+.search-input {
+  flex: 1;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-right: none;
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--gray); }
+.search-btn {
+  padding: 12px 24px;
+  background: var(--white);
+  border: none;
+  color: var(--black);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-btn:hover { background: var(--accent); }
+
+/* ═══ MODAL ═══ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--black);
+  border: 1px solid rgba(255,255,255,0.2);
+  max-width: 520px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+  padding: 28px;
+  border-bottom: var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-title { font-family: var(--font-display); font-size: 36px; }
+.modal-close {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+  width: 36px; height: 36px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: var(--red); border-color: var(--red); }
+.modal-body { padding: 28px; }
+
+/* Form elements */
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 8px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+}
+.form-input::placeholder { color: var(--gray); }
+.form-select option { background: #1a1a1a; }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--white);
+  color: var(--black);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.btn-primary:hover { background: var(--accent); }
+.btn-secondary {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--white); }
+
+/* Nutrition bars in modal */
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.nutrition-item { }
+.nutrition-label {
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.nutrition-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.nutrition-bar {
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 1px;
+}
+.nutrition-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.8s ease;
+}
+
+/* Qty input */
+.qty-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+  margin-bottom: 20px;
+}
+.qty-btn {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.qty-btn:hover { background: rgba(255,255,255,0.15); }
+.qty-display {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  outline: none;
+}
+
+/* ═══ INVENTORY / STOCK ═══ */
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.inventory-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.inventory-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  vertical-align: middle;
+}
+.inventory-table tr:hover td { background: rgba(255,255,255,0.03); }
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.badge-ok { background: rgba(200,240,0,0.15); color: var(--accent); }
+.badge-low { background: rgba(255,170,0,0.15); color: #ffaa00; }
+.badge-out { background: rgba(255,51,51,0.15); color: var(--red); }
+.badge-warn { background: rgba(255,100,0,0.15); color: #ff6400; }
+
+/* FIFO tag */
+.fifo-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid rgba(200,240,0,0.3);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+/* ═══ GPS TRACKER ═══ */
+.gps-container {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  min-height: 500px;
+}
+.gps-sidebar {
+  background: var(--black);
+  padding: 24px;
+  overflow-y: auto;
+}
+.gps-map {
+  background: #111;
+  position: relative;
+  overflow: hidden;
+}
+.delivery-item {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.delivery-item:hover { opacity: 0.7; }
+.delivery-id {
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.delivery-meta { font-size: 11px; color: var(--gray); }
+.delivery-meta span { color: var(--white); }
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.status-moving .status-dot { background: var(--accent); animation: pulse 1s infinite; }
+.status-arrived .status-dot { background: #4488ff; }
+.status-pending .status-dot { background: var(--gray); }
+
+/* Animated map grid */
+.map-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.map-route {
+  position: absolute;
+  top: 50%; left: 10%;
+  width: 80%;
+  height: 2px;
+}
+.map-route svg { width: 100%; }
+.truck-icon {
+  position: absolute;
+  font-size: 24px;
+  transform: translate(-50%, -50%);
+  animation: driveTruck 8s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(200,240,0,0.6));
+}
+@keyframes driveTruck {
+  0% { left: 10%; top: 50%; }
+  30% { left: 45%; top: 35%; }
+  60% { left: 70%; top: 55%; }
+  100% { left: 90%; top: 45%; }
+}
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 20px;
+}
+.ping-anim {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: pingRing 2s ease-out infinite;
+  opacity: 0;
+}
+@keyframes pingRing {
+  0% { transform: translate(-50%,-50%) scale(0.5); opacity: 0.8; }
+  100% { transform: translate(-50%,-50%) scale(3); opacity: 0; }
+}
+.map-label {
+  position: absolute;
+  background: var(--black);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.eta-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 20px 28px;
+  background: rgba(0,0,0,0.8);
+  border-top: var(--border);
+  backdrop-filter: blur(8px);
+  display: flex;
+  gap: 48px;
+}
+.eta-item .eta-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; }
+.eta-item .eta-value { font-family: var(--font-display); font-size: 28px; }
+
+/* ═══ REPORTS ═══ */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 32px;
+}
+.report-box {
+  background: var(--black);
+  padding: 28px;
+}
+.report-num {
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.report-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; }
+.report-change { font-size: 11px; margin-top: 8px; }
+.up { color: var(--accent); }
+.down { color: var(--red); }
+
+/* Bar chart */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+  padding: 0 0 40px;
+  position: relative;
+}
+.bar-chart::after {
+  content: '';
+  position: absolute;
+  bottom: 40px; left: 0; right: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+.chart-bar {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  position: relative;
+  transition: height 0.8s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+}
+.chart-bar:hover { background: rgba(200,240,0,0.3); }
+.chart-bar.active { background: var(--accent); }
+.chart-bar-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--accent);
+  transition: height 1s cubic-bezier(0.4,0,0.2,1);
+}
+.chart-label {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+/* ═══ NUTRITION PAGE ═══ */
+.nutrition-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.nutrition-card {
+  background: var(--black);
+  padding: 32px;
+  transition: background 0.2s;
+}
+.nutrition-card:hover { background: rgba(255,255,255,0.03); }
+.nutrition-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.nutrition-card-emoji { font-size: 40px; }
+.nutrition-card-name { font-family: var(--font-display); font-size: 36px; line-height: 1; }
+.nutrition-card-cal { font-size: 11px; color: var(--gray); }
+.nut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.nut-name { width: 100px; font-size: 11px; color: var(--gray); flex-shrink: 0; }
+.nut-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.nut-bar-fill { height: 100%; border-radius: 2px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.nut-val { width: 52px; text-align: right; font-size: 11px; }
+.nut-c { background: var(--accent); }
+.nut-p { background: #88aaff; }
+.nut-f { background: #ff8844; }
+.nut-vi { background: #ff66aa; }
+.nut-fi { background: #44ddaa; }
+
+/* ═══ LIVE CHAT ═══ */
+.chat-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1500;
+}
+.chat-btn {
+  width: 52px; height: 52px;
+  background: var(--white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.chat-btn:hover { background: var(--accent); transform: scale(1.1); }
+.chat-notif {
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 16px; height: 16px;
+  background: var(--red);
+  border-radius: 50%;
+  font-size: 9px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.chat-panel {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: 320px;
+  height: 420px;
+  background: var(--black);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.chat-panel.open { display: flex; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chat-header {
+  padding: 16px 20px;
+  border-bottom: var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.chat-header-title { font-family: var(--font-display); font-size: 22px; }
+.chat-header-status { font-size: 10px; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-msg { max-width: 80%; }
+.chat-msg.bot { align-self: flex-start; }
+.chat-msg.user { align-self: flex-end; }
+.chat-bubble {
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.chat-msg.bot .chat-bubble {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.chat-msg.user .chat-bubble {
+  background: var(--accent);
+  color: var(--black);
+}
+.chat-time { font-size: 9px; color: var(--gray); margin-top: 4px; }
+.chat-input-row {
+  display: flex;
+  border-top: var(--border);
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+}
+.chat-input::placeholder { color: var(--gray); }
+.chat-send {
+  padding: 0 16px;
+  background: var(--white);
+  border: none;
+  color: var(--black);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.chat-send:hover { background: var(--accent); }
+
+/* ═══ ADMIN PAGE ═══ */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 32px;
+}
+.admin-card {
+  background: var(--black);
+  padding: 32px;
+}
+.admin-card-title {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 16px;
+}
+.admin-num {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 1;
+}
+
+/* Photo upload */
+.upload-zone {
+  border: 2px dashed rgba(255,255,255,0.2);
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(200,240,0,0.04); }
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-text { font-size: 12px; color: var(--gray); }
+.upload-text strong { color: var(--white); }
+#upload-file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* Order list in admin */
+.order-list { display: flex; flex-direction: column; gap: 1px; }
+.order-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px 120px 100px;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  gap: 16px;
+  font-size: 12px;
+}
+.order-row:hover { background: rgba(255,255,255,0.06); }
+.order-id { font-family: var(--font-display); font-size: 20px; color: var(--accent); }
+.order-actions { display: flex; gap: 8px; }
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-approve { background: var(--accent); color: var(--black); }
+.btn-approve:hover { opacity: 0.8; }
+.btn-reject { background: var(--red); color: var(--white); }
+.btn-reject:hover { opacity: 0.8; }
+
+/* Login page */
+.login-container {
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 48px 32px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.login-logo {
+  font-family: var(--font-display);
+  font-size: 56px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.login-logo span { color: var(--accent); }
+.login-sub { text-align: center; color: var(--gray); font-size: 11px; margin-bottom: 40px; }
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  top: 96px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  padding: 14px 20px;
+  background: var(--white);
+  color: var(--black);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  animation: toastIn 0.3s cubic-bezier(0.4,0,0.2,1);
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toast.success { background: var(--accent); }
+.toast.error { background: var(--red); color: white; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══ SUPABASE GUIDE ═══ */
+.guide-steps { display: flex; flex-direction: column; gap: 0; }
+.guide-step {
+  padding: 32px;
+  border-bottom: var(--border);
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 24px;
+}
+.step-num {
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 1;
+  color: rgba(255,255,255,0.15);
+}
+.step-title { font-family: var(--font-display); font-size: 28px; margin-bottom: 12px; }
+.step-body { color: var(--gray); line-height: 1.8; font-size: 12px; }
+.code-block {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 16px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  overflow-x: auto;
+  margin: 12px 0;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+/* ═══ CART BUTTON ═══ */
+.cart-float {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  z-index: 1400;
+  background: var(--accent);
+  color: var(--black);
+  border: none;
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+  transform: translateX(200px);
+}
+.cart-float.visible { transform: translateX(0); }
+.cart-float:hover { background: var(--white); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .gps-container { grid-template-columns: 1fr; }
+  .report-grid { grid-template-columns: 1fr; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .order-row { grid-template-columns: 1fr; }
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .hero { padding: 40px 16px; }
+  .section { padding: 40px 16px; }
+  .stats-row { margin: 0 16px; }
+}
+
+/* Animated counter */
+.counter { transition: all 0.1s; }
+
+/* Section divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  margin: 0 32px;
+}
+
+/* Progress indicator */
+.progress-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.progress-ring svg { transform: rotate(-90deg); }
+.progress-ring-text {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--white);
+}
+
+/* Cart counter badge on nav */
+.cart-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  background: var(--accent);
+  color: var(--black);
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <div class="ticker-item">🟢 PROGRAM AKTIF <span>•</span> 2.847 PENERIMA MANFAAT <span>•</span></div>
+    <div class="ticker-item">🍎 STOK BUAH: 4.320 KG <span>•</span> DIPERBARUI: HARI INI <span>•</span></div>
+    <div class="ticker-item">📦 PENGIRIMAN AKTIF: 12 <span>•</span> ETA 14:30 WIB <span>•</span></div>
+    <div class="ticker-item">🏥 NUTRISI TERPANTAU: 98.2% <span>•</span> TARGET APRIL: 95% <span>•</span></div>
+    <div class="ticker-item">🟢 PROGRAM AKTIF <span>•</span> 2.847 PENERIMA MANFAAT <span>•</span></div>
+    <div class="ticker-item">🍎 STOK BUAH: 4.320 KG <span>•</span> DIPERBARUI: HARI INI <span>•</span></div>
+    <div class="ticker-item">📦 PENGIRIMAN AKTIF: 12 <span>•</span> ETA 14:30 WIB <span>•</span></div>
+    <div class="ticker-item">🏥 NUTRISI TERPANTAU: 98.2% <span>•</span> TARGET APRIL: 95% <span>•</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">MB<span>G</span></div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Beranda</a></li>
+    <li><a onclick="showPage('catalog')" id="nav-catalog">Katalog</a></li>
+    <li><a onclick="showPage('stock')" id="nav-stock">Stok</a></li>
+    <li><a onclick="showPage('nutrition')" id="nav-nutrition">Nutrisi</a></li>
+    <li><a onclick="showPage('gps')" id="nav-gps">GPS</a></li>
+    <li><a onclick="showPage('reports')" id="nav-reports">Laporan</a></li>
+    <li><a onclick="showPage('admin')" id="nav-admin">Admin</a></li>
+    <li><a onclick="showPage('guide')" id="nav-guide">Setup DB</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div class="online-dot"></div>
+    <button class="btn-login" onclick="openLoginModal()">Login Staff</button>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- CART FLOAT -->
+<button class="cart-float" id="cart-float" onclick="openCartModal()">
+  🛒 Keranjang <span id="cart-count">0</span>
+</button>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- HOME PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-tag">Program Nasional 2025</div>
+    <h1 class="hero-title">MAKAN<br>BERGIZI<br><span class="italic">Gratis</span></h1>
+    <p class="hero-sub">Sistem pengelolaan distribusi buah segar untuk program MBG. Pantau stok, lacak pengiriman, dan pastikan nutrisi optimal untuk setiap penerima manfaat.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn-login" onclick="showPage('catalog')" style="font-size:12px;">Lihat Katalog →</button>
+      <button class="btn-secondary" style="width:auto;padding:8px 20px;font-size:12px;" onclick="showPage('gps')">Lacak Pengiriman</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num accent counter" data-target="2847">0</div>
+      <div class="stat-label">Penerima Manfaat</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num counter" data-target="4320">0</div>
+      <div class="stat-label">kg Stok Buah</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num counter" data-target="12">0</div>
+      <div class="stat-label">Pengiriman Aktif</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num accent" style="font-size:40px;">98.2%</div>
+      <div class="stat-label">Tingkat Distribusi</div>
+    </div>
+  </div>
+
+  <!-- Quick stock overview -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">STATUS STOK</div>
+      <div class="section-count" style="cursor:pointer;" onclick="showPage('stock')">Lihat Semua →</div>
+    </div>
+    <div class="fruit-grid" id="home-stock-preview"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Program info -->
+  <div class="section" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;">
+    <div>
+      <div class="section-title" style="font-size:36px;margin-bottom:20px;">TENTANG MBG</div>
+      <p style="color:var(--gray);line-height:2;font-size:12px;">Program Makan Bergizi Gratis adalah inisiatif pemerintah Republik Indonesia untuk memastikan pemenuhan gizi optimal bagi anak sekolah, ibu hamil, dan balita di seluruh Indonesia.</p>
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;font-size:12px;"><span style="color:var(--accent);font-size:18px;">✓</span> Distribusi harian ke sekolah & posyandu</div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:12px;"><span style="color:var(--accent);font-size:18px;">✓</span> Pemantauan nutrisi real-time</div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:12px;"><span style="color:var(--accent);font-size:18px;">✓</span> Pelacakan stok FIFO otomatis</div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:12px;"><span style="color:var(--accent);font-size:18px;">✓</span> Foto bukti penerimaan digital</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div style="padding:24px;border:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Target Harian</div>
+        <div style="font-family:var(--font-display);font-size:48px;">500<span style="font-size:20px;color:var(--gray)"> porsi</span></div>
+        <div class="stock-bar"><div class="stock-bar-fill" style="width:92%"></div></div>
+        <div style="font-size:11px;color:var(--gray);">460 / 500 terdistribusi hari ini</div>
+      </div>
+      <div style="padding:24px;border:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Nilai Gizi Rata-rata</div>
+        <div style="font-family:var(--font-display);font-size:48px;">285<span style="font-size:20px;color:var(--gray)"> kcal</span></div>
+        <div style="font-size:11px;color:var(--gray);">Per porsi buah kombinasi</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- CATALOG PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-catalog">
+  <div class="section" style="padding-bottom:0;">
+    <div class="section-header">
+      <div>
+        <div class="section-title">KATALOG BUAH</div>
+        <div style="color:var(--gray);font-size:11px;margin-top:4px;">Pesan buah segar langsung dari sistem</div>
+      </div>
+      <div class="section-count" id="catalog-count">— item tersedia</div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" placeholder="Cari nama buah, kategori..." id="catalog-search" oninput="filterCatalog()">
+      <button class="search-btn">Cari</button>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setCatalogFilter('all', this)">Semua</button>
+      <button class="filter-btn" onclick="setCatalogFilter('citrus', this)">Sitrus</button>
+      <button class="filter-btn" onclick="setCatalogFilter('tropical', this)">Tropis</button>
+      <button class="filter-btn" onclick="setCatalogFilter('berry', this)">Berry</button>
+      <button class="filter-btn" onclick="setCatalogFilter('melon', this)">Melon</button>
+      <button class="filter-btn" onclick="setCatalogFilter('available', this)">Tersedia</button>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0;">
+    <div class="fruit-grid" id="catalog-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- STOCK PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-stock">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">MANAJEMEN STOK</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm btn-approve" onclick="openAddStockModal()">+ Tambah Stok</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);margin-bottom:32px;">
+      <div style="background:var(--black);padding:24px;">
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Total Item</div>
+        <div style="font-family:var(--font-display);font-size:48px;" id="total-items">0</div>
+      </div>
+      <div style="background:var(--black);padding:24px;">
+        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Stok Aman</div>
+        <div style="font-family:var(--font-display);font-size:48px;color:var(--accent);" id="stock-ok-count">0</div>
+      </div>
+      <div style="background:var(--black);padding:24px;">
+        <div style="font-size:10px;color:#ffaa00;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Stok Rendah</div>
+        <div style="font-family:var(--font-display);font-size:48px;color:#ffaa00;" id="stock-low-count">0</div>
+      </div>
+      <div style="background:var(--black);padding:24px;">
+        <div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Habis</div>
+        <div style="font-family:var(--font-display);font-size:48px;color:var(--red);" id="stock-out-count">0</div>
+      </div>
+    </div>
+
+    <!-- FIFO Table -->
+    <div style="font-family:var(--font-display);font-size:28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      TRACKING FIFO <span class="fifo-tag">FIRST IN FIRST OUT</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="inventory-table" id="fifo-table">
+        <thead>
+          <tr>
+            <th>Buah</th>
+            <th>Batch ID</th>
+            <th>Tgl Masuk</th>
+            <th>Tgl Kadaluarsa</th>
+            <th>Qty (kg)</th>
+            <th>Status</th>
+            <th>Lokasi</th>
+            <th>Prioritas</th>
+          </tr>
+        </thead>
+        <tbody id="fifo-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- NUTRITION PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-nutrition">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">INFO NUTRISI</div>
+      <div class="section-count">Per 100g Buah Segar</div>
+    </div>
+    <div class="nutrition-cards" id="nutrition-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- GPS PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-gps">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">GPS TRACKER</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--accent);">
+        <div class="online-dot"></div> Live Tracking
+      </div>
+    </div>
+    <div class="gps-container">
+      <div class="gps-sidebar">
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray);margin-bottom:16px;">Pengiriman Aktif</div>
+        <div id="delivery-list"></div>
+      </div>
+      <div class="gps-map" id="gps-map">
+        <div class="map-grid"></div>
+        <!-- Route SVG -->
+        <svg style="position:absolute;inset:0;width:100%;height:calc(100% - 80px);" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(200,240,0,0.4)"/>
+            </marker>
+          </defs>
+          <path d="M 60,200 C 120,180 180,120 280,140 S 420,180 500,160 S 620,140 700,170"
+            fill="none" stroke="rgba(200,240,0,0.25)" stroke-width="2" stroke-dasharray="8,6" marker-end="url(#arrow)"/>
+          <path d="M 80,280 C 140,260 240,300 360,260 S 480,220 600,250"
+            fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="4,4"/>
+        </svg>
+
+        <!-- Truck -->
+        <div class="truck-icon" id="truck1">🚛</div>
+
+        <!-- Pins -->
+        <div class="map-pin" style="left:10%;top:60%;">📍</div>
+        <div class="ping-anim" style="left:10%;top:60%;"></div>
+        <div class="map-label" style="left:calc(10% + 16px);top:55%;">Gudang Pusat</div>
+
+        <div class="map-pin" style="left:48%;top:40%;">🏫</div>
+        <div class="map-label" style="left:calc(48% + 16px);top:35%;">SDN 01 Cempaka</div>
+
+        <div class="map-pin" style="left:72%;top:58%;">🏥</div>
+        <div class="map-label" style="left:calc(72% + 16px);top:53%;">Posyandu Melati</div>
+
+        <div class="map-pin" style="left:88%;top:46%;">🏫</div>
+        <div class="map-label" style="left:calc(88% - 130px);top:41%;">SMPN 3 Harapan</div>
+
+        <!-- ETA bar -->
+        <div class="eta-bar">
+          <div class="eta-item">
+            <div class="eta-label">ETA Tujuan</div>
+            <div class="eta-value" id="eta-value">14:32</div>
+          </div>
+          <div class="eta-item">
+            <div class="eta-label">Jarak</div>
+            <div class="eta-value">4.2 <span style="font-size:14px;color:var(--gray)">km</span></div>
+          </div>
+          <div class="eta-item">
+            <div class="eta-label">Kecepatan</div>
+            <div class="eta-value">42 <span style="font-size:14px;color:var(--gray)">km/h</span></div>
+          </div>
+          <div class="eta-item">
+            <div class="eta-label">Muatan</div>
+            <div class="eta-value">82 <span style="font-size:14px;color:var(--gray)">kg</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- REPORTS PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-reports">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">LAPORAN BULANAN</div>
+      <div style="display:flex;gap:8px;">
+        <button class="filter-btn active" onclick="setReportMonth('apr', this)">Apr 2025</button>
+        <button class="filter-btn" onclick="setReportMonth('mar', this)">Mar 2025</button>
+        <button class="filter-btn" onclick="setReportMonth('feb', this)">Feb 2025</button>
+        <button class="filter-btn" onclick="exportReport()">↓ Export CSV</button>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <div class="report-box">
+        <div class="report-label">Total Distribusi</div>
+        <div class="report-num accent">14,280</div>
+        <div class="report-change up">↑ +12.4% vs bulan lalu</div>
+      </div>
+      <div class="report-box">
+        <div class="report-label">Total Berat (kg)</div>
+        <div class="report-num">42,840</div>
+        <div class="report-change up">↑ +8.1%</div>
+      </div>
+      <div class="report-box">
+        <div class="report-label">Efisiensi Distribusi</div>
+        <div class="report-num">98.2<span style="font-size:24px;">%</span></div>
+        <div class="report-change up">↑ +1.3%</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div style="padding:32px;border:1px solid rgba(255,255,255,0.1);margin-bottom:32px;">
+      <div style="font-family:var(--font-display);font-size:24px;margin-bottom:32px;">DISTRIBUSI HARIAN — APRIL 2025</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+
+    <!-- Fruit breakdown -->
+    <div style="font-family:var(--font-display);font-size:28px;margin-bottom:20px;">RINCIAN PER BUAH</div>
+    <table class="inventory-table" id="report-table">
+      <thead>
+        <tr>
+          <th>Buah</th>
+          <th>Total Didistribusikan</th>
+          <th>Berat (kg)</th>
+          <th>% dari Total</th>
+          <th>Sisa Stok</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="report-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ADMIN PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-admin">
+  <div id="admin-locked" class="section">
+    <div style="text-align:center;padding:80px 0;">
+      <div style="font-size:64px;margin-bottom:24px;">🔐</div>
+      <div style="font-family:var(--font-display);font-size:48px;margin-bottom:16px;">AKSES TERBATAS</div>
+      <div style="color:var(--gray);margin-bottom:32px;">Silakan login sebagai staff untuk mengakses dashboard admin.</div>
+      <button class="btn-login" onclick="openLoginModal()">Login Staff</button>
+    </div>
+  </div>
+  <div id="admin-content" style="display:none;">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">ADMIN DASHBOARD</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;"><div class="online-dot"></div>Staff: <span id="admin-username" style="color:var(--accent);">—</span></div>
+      </div>
+
+      <div class="admin-grid" style="margin-bottom:32px;">
+        <div class="admin-card">
+          <div class="admin-card-title">Pesanan Masuk Hari Ini</div>
+          <div class="admin-num accent" id="admin-orders-count">24</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">Menunggu Konfirmasi</div>
+          <div class="admin-num" style="color:#ffaa00;" id="admin-pending-count">7</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">Selesai Hari Ini</div>
+          <div class="admin-num">17</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">Retur / Komplain</div>
+          <div class="admin-num" style="color:var(--red);">0</div>
+        </div>
+      </div>
+
+      <!-- Orders list -->
+      <div style="font-family:var(--font-display);font-size:28px;margin-bottom:20px;">ANTRIAN PESANAN</div>
+      <div style="display:grid;grid-template-columns:60px 1fr 120px 120px 160px;gap:16px;padding:12px 20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);border-bottom:1px solid rgba(255,255,255,0.1);">
+        <span>ID</span><span>Detail</span><span>Qty</span><span>Tujuan</span><span>Aksi</span>
+      </div>
+      <div class="order-list" id="order-list"></div>
+
+      <!-- Photo proof section -->
+      <div style="font-family:var(--font-display);font-size:28px;margin:40px 0 20px;">FOTO BUKTI PENERIMAAN</div>
+      <div class="upload-zone" id="upload-zone"
+        onclick="document.getElementById('upload-file-input').click()"
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleDrop(event)">
+        <input type="file" id="upload-file-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="handleFileSelect(event)">
+        <div class="upload-icon" id="upload-icon">📷</div>
+        <div class="upload-text" id="upload-text">
+          <strong>Klik untuk upload</strong> atau drag & drop foto<br>
+          Format: JPG, PNG, HEIC — maks 10MB
+        </div>
+      </div>
+      <div id="uploaded-photos" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;"></div>
+
+      <!-- Staff messages -->
+      <div style="font-family:var(--font-display);font-size:28px;margin:40px 0 20px;">PESAN STAFF</div>
+      <div style="padding:24px;border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:16px;" id="staff-messages">
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="font-size:24px;">👤</div>
+          <div>
+            <div style="font-size:10px;color:var(--gray);margin-bottom:4px;">Budi Santoso — Kurir A • 09:42</div>
+            <div style="font-size:12px;">Pengiriman ke SDN 01 selesai. 45kg buah diterima ibu kepala sekolah.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="font-size:24px;">👤</div>
+          <div>
+            <div style="font-size:10px;color:var(--gray);margin-bottom:4px;">Rina Kartika — Gudang • 10:15</div>
+            <div style="font-size:12px;">Stok pisang hampir habis. Perlu reorder segera untuk batch besok.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:0;margin-top:12px;border:1px solid rgba(255,255,255,0.15);">
+        <input class="form-input" id="staff-msg-input" placeholder="Tulis pesan untuk tim..." style="flex:1;border:none;" onkeypress="if(event.key==='Enter')sendStaffMessage()">
+        <button class="search-btn" onclick="sendStaffMessage()">Kirim</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SUPABASE GUIDE PAGE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="page-guide">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">SETUP DATABASE</div>
+      <div class="section-count">Supabase + PostgreSQL</div>
+    </div>
+    <div style="color:var(--gray);max-width:640px;margin-bottom:48px;line-height:1.8;font-size:12px;">
+      Panduan lengkap menghubungkan sistem MBG ke Supabase sebagai backend database.
+      Ikuti langkah-langkah berikut secara berurutan.
+    </div>
+
+    <div class="guide-steps" style="border:1px solid rgba(255,255,255,0.1);">
+      <div class="guide-step">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">BUAT AKUN SUPABASE</div>
+          <div class="step-body">Kunjungi <strong style="color:var(--white);">supabase.com</strong> dan buat akun gratis. Klik "New Project", beri nama <em>mbg-system</em>, pilih region <strong style="color:var(--white);">Southeast Asia (Singapore)</strong> untuk latensi terbaik dari Indonesia. Catat <strong style="color:var(--white);">Project URL</strong> dan <strong style="color:var(--white);">anon public key</strong> dari Settings → API.</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">BUAT TABEL DATABASE</div>
+          <div class="step-body">Buka SQL Editor di Supabase, jalankan query berikut:</div>
+          <div class="code-block">-- Tabel buah/produk
+CREATE TABLE fruits (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  latin_name VARCHAR(150),
+  category VARCHAR(50),
+  price_per_kg DECIMAL(10,2),
+  stock_kg DECIMAL(10,2) DEFAULT 0,
+  min_stock_kg DECIMAL(10,2) DEFAULT 50,
+  emoji VARCHAR(10),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabel batch stok (FIFO)
+CREATE TABLE stock_batches (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  fruit_id UUID REFERENCES fruits(id),
+  batch_code VARCHAR(50) UNIQUE NOT NULL,
+  entry_date DATE NOT NULL,
+  expiry_date DATE NOT NULL,
+  qty_kg DECIMAL(10,2) NOT NULL,
+  qty_remaining DECIMAL(10,2),
+  location VARCHAR(100),
+  status VARCHAR(20) DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabel pesanan
+CREATE TABLE orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_number VARCHAR(20) UNIQUE NOT NULL,
+  customer_name VARCHAR(200),
+  destination VARCHAR(300),
+  destination_type VARCHAR(50), -- sekolah, posyandu, dll
+  items JSONB,
+  total_weight_kg DECIMAL(10,2),
+  status VARCHAR(30) DEFAULT 'pending',
+  proof_photo_url TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+
+-- Tabel nutrisi per buah
+CREATE TABLE nutrition_info (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  fruit_id UUID REFERENCES fruits(id) UNIQUE,
+  calories_kcal DECIMAL(8,2),
+  carbs_g DECIMAL(8,2),
+  protein_g DECIMAL(8,2),
+  fat_g DECIMAL(8,2),
+  fiber_g DECIMAL(8,2),
+  vitamin_c_mg DECIMAL(8,2),
+  potassium_mg DECIMAL(8,2)
+);
+
+-- Tabel staff/pengguna
+CREATE TABLE staff (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  full_name VARCHAR(200),
+  role VARCHAR(30), -- admin, kurir, gudang
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabel tracking pengiriman
+CREATE TABLE deliveries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id),
+  driver_id UUID REFERENCES staff(id),
+  lat DECIMAL(10,6),
+  lng DECIMAL(10,6),
+  status VARCHAR(30),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabel laporan bulanan (view)
+CREATE VIEW monthly_report AS
+SELECT
+  DATE_TRUNC('month', created_at) AS month,
+  COUNT(*) AS total_orders,
+  SUM(total_weight_kg) AS total_weight_kg,
+  COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed,
+  AVG(total_weight_kg) AS avg_weight_per_order
+FROM orders
+GROUP BY DATE_TRUNC('month', created_at)
+ORDER BY month DESC;</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">AKTIFKAN ROW LEVEL SECURITY</div>
+          <div class="step-body">Aktifkan RLS untuk keamanan data. Hanya staff terautentikasi yang dapat mengubah data.</div>
+          <div class="code-block">-- Aktifkan RLS
+ALTER TABLE fruits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stock_batches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+-- Policy: publik bisa baca katalog buah
+CREATE POLICY "Public can read fruits"
+  ON fruits FOR SELECT USING (true);
+
+-- Policy: hanya authenticated bisa ubah stok
+CREATE POLICY "Staff can manage stock"
+  ON stock_batches FOR ALL
+  USING (auth.role() = 'authenticated');
+
+-- Policy: authenticated bisa manage orders
+CREATE POLICY "Staff can manage orders"
+  ON orders FOR ALL
+  USING (auth.role() = 'authenticated');</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">04</div>
+        <div>
+          <div class="step-title">SETUP STORAGE UNTUK FOTO</div>
+          <div class="step-body">Buat bucket di Supabase Storage untuk foto bukti penerimaan.</div>
+          <div class="code-block">-- Di Supabase Dashboard → Storage → New Bucket
+-- Nama bucket: "proof-photos"
+-- Public: false (private)
+
+-- Policy upload foto (hanya staff)
+CREATE POLICY "Staff can upload proof photos"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'proof-photos'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Policy read foto
+CREATE POLICY "Staff can view proof photos"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'proof-photos'
+    AND auth.role() = 'authenticated'
+  );</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">05</div>
+        <div>
+          <div class="step-title">HUBUNGKAN KE APLIKASI</div>
+          <div class="step-body">Install Supabase JS client dan konfigurasi koneksi.</div>
+          <div class="code-block">// Install via npm
+npm install @supabase/supabase-js
+
+// supabase.js - konfigurasi client
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = 'https://xxxx.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJ...'
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// Contoh: ambil data buah
+const { data: fruits, error } = await supabase
+  .from('fruits')
+  .select('*, nutrition_info(*)')
+  .order('name')
+
+// Contoh: tambah pesanan
+const { data, error } = await supabase
+  .from('orders')
+  .insert({
+    order_number: 'MBG-2025-001',
+    customer_name: 'SDN 01 Cempaka',
+    destination: 'Jl. Cempaka No.1',
+    destination_type: 'sekolah',
+    items: [{ fruit_id: '...', qty_kg: 10 }],
+    total_weight_kg: 10
+  })
+
+// Upload foto bukti
+const { data: photo } = await supabase.storage
+  .from('proof-photos')
+  .upload(`orders/${orderId}/proof.jpg`, file)
+
+// Realtime tracking pengiriman
+supabase
+  .channel('deliveries')
+  .on('postgres_changes', {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'deliveries'
+  }, (payload) => {
+    updateMapPosition(payload.new.lat, payload.new.lng)
+  })
+  .subscribe()</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">06</div>
+        <div>
+          <div class="step-title">SETUP REALTIME & NOTIFIKASI</div>
+          <div class="step-body">Aktifkan Realtime untuk live chat dan GPS tracking. Di Supabase Dashboard → Database → Replication, aktifkan tabel <em>deliveries</em> dan <em>orders</em> untuk realtime updates. Gunakan Supabase Edge Functions untuk notifikasi otomatis saat stok menipis.</div>
+          <div class="code-block">// Edge Function: notifikasi stok rendah
+// supabase/functions/stock-alert/index.ts
+
+import { serve } from "https://deno.land/std/http/server.ts"
+import { createClient } from "@supabase/supabase-js"
+
+serve(async () => {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, ...)
+
+  const { data: lowStock } = await supabase
+    .from('fruits')
+    .select('*')
+    .lt('stock_kg', 'min_stock_kg')
+
+  // Kirim notifikasi ke admin
+  if (lowStock?.length > 0) {
+    // Integrasi WhatsApp/email notifikasi
+    console.log('Low stock alert:', lowStock.map(f => f.name))
+  }
+})</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODALS -->
+<!-- ══════════════════════════════════════════════════ -->
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">LOGIN STAFF</div>
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" id="login-user" placeholder="username staff..." type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-pass" placeholder="••••••••" type="password">
+      </div>
+      <div style="font-size:11px;color:var(--gray);margin-bottom:16px;">Demo: username <strong style="color:var(--white);">admin</strong> / password <strong style="color:var(--white);">mbg2025</strong></div>
+      <button class="btn-primary" onclick="doLogin()">Masuk →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fruit Detail Modal -->
+<div class="modal-overlay" id="fruit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="fruit-modal-name">—</div>
+      <button class="modal-close" onclick="closeModal('fruit-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;font-size:72px;margin-bottom:16px;" id="fruit-modal-emoji">—</div>
+      <div style="font-size:11px;color:var(--gray);font-style:italic;text-align:center;margin-bottom:24px;" id="fruit-modal-latin">—</div>
+
+      <!-- Nutrition -->
+      <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray);margin-bottom:16px;">Info Nutrisi (per 100g)</div>
+      <div class="nutrition-grid" id="fruit-modal-nutrition"></div>
+
+      <!-- Stock info -->
+      <div style="padding:16px;border:1px solid rgba(255,255,255,0.1);margin:20px 0;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:0.1em;">Stok Tersedia</span>
+          <span id="fruit-modal-stock" style="font-family:var(--font-display);font-size:24px;">—</span>
+        </div>
+        <div class="stock-bar"><div class="stock-bar-fill" id="fruit-modal-bar" style="width:0%"></div></div>
+      </div>
+
+      <!-- Order form -->
+      <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray);margin-bottom:12px;">Jumlah Pesan (kg)</div>
+      <div class="qty-input-row">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <input class="qty-display" id="qty-input" value="5" type="number" min="1" max="500">
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama / Institusi Pemesan</label>
+        <input class="form-input" id="order-name" placeholder="SDN 01, Posyandu Melati...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan</label>
+        <textarea class="form-textarea" id="order-notes" placeholder="Kebutuhan khusus, jadwal pengiriman..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="addToCart()">Tambah ke Keranjang 🛒</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Modal -->
+<div class="modal-overlay" id="cart-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title">KERANJANG PESANAN</div>
+      <button class="modal-close" onclick="closeModal('cart-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="cart-items" style="display:flex;flex-direction:column;gap:1px;margin-bottom:24px;"></div>
+      <div style="display:flex;justify-content:space-between;padding:20px 0;border-top:1px solid rgba(255,255,255,0.1);margin-bottom:20px;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray);">Total Berat</span>
+        <span style="font-family:var(--font-display);font-size:32px;" id="cart-total">0 kg</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama Pemesan / Institusi</label>
+        <input class="form-input" id="cart-customer" placeholder="SDN 01 Cempaka...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alamat Pengiriman</label>
+        <input class="form-input" id="cart-address" placeholder="Jl. ...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jenis Tujuan</label>
+        <select class="form-select" id="cart-type">
+          <option value="sekolah">Sekolah</option>
+          <option value="posyandu">Posyandu</option>
+          <option value="puskesmas">Puskesmas</option>
+          <option value="lainnya">Lainnya</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="submitOrder()">Kirim Pesanan →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div class="modal-overlay" id="add-stock-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">TAMBAH STOK</div>
+      <button class="modal-close" onclick="closeModal('add-stock-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Jenis Buah</label>
+        <select class="form-select" id="stock-fruit"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Batch Code</label>
+        <input class="form-input" id="stock-batch" value="BATCH-2025-" placeholder="BATCH-2025-...">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Tanggal Masuk</label>
+          <input class="form-input" id="stock-entry" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal Kadaluarsa</label>
+          <input class="form-input" id="stock-expiry" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jumlah (kg)</label>
+        <input class="form-input" id="stock-qty" type="number" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Lokasi Penyimpanan</label>
+        <input class="form-input" id="stock-location" placeholder="Rak A1, Lemari 3...">
+      </div>
+      <button class="btn-primary" onclick="addStock()">Simpan Stok</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- LIVE CHAT WIDGET -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="chat-widget">
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      <div>
+        <div class="chat-header-title">MBG SUPPORT</div>
+        <div class="chat-header-status"><div class="online-dot" style="width:6px;height:6px;"></div>Online sekarang</div>
+      </div>
+      <button class="modal-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Tulis pesan..." onkeypress="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">↑</button>
+    </div>
+  </div>
+  <button class="chat-btn" onclick="toggleChat()">
+    💬
+    <div class="chat-notif" id="chat-notif">1</div>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ══════════════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+const FRUITS = [
+  { id:'f1', emoji:'🍎', name:'Apel', latin:'Malus domestica', category:'berry', stock:320, max:500, price:18500, unit:'kg' },
+  { id:'f2', emoji:'🍊', name:'Jeruk', latin:'Citrus sinensis', category:'citrus', stock:85, max:400, price:12000, unit:'kg' },
+  { id:'f3', emoji:'🍌', name:'Pisang', latin:'Musa paradisiaca', category:'tropical', stock:15, max:300, price:8000, unit:'kg' },
+  { id:'f4', emoji:'🍇', name:'Anggur', latin:'Vitis vinifera', category:'berry', stock:0, max:200, price:45000, unit:'kg' },
+  { id:'f5', emoji:'🥭', name:'Mangga', latin:'Mangifera indica', category:'tropical', stock:210, max:350, price:15000, unit:'kg' },
+  { id:'f6', emoji:'🍉', name:'Semangka', latin:'Citrullus lanatus', category:'melon', stock:180, max:400, price:6000, unit:'kg' },
+  { id:'f7', emoji:'🍓', name:'Stroberi', latin:'Fragaria ananassa', category:'berry', stock:45, max:150, price:55000, unit:'kg' },
+  { id:'f8', emoji:'🫐', name:'Blueberry', latin:'Vaccinium corymbosum', category:'berry', stock:22, max:100, price:120000, unit:'kg' },
+  { id:'f9', emoji:'🍍', name:'Nanas', latin:'Ananas comosus', category:'tropical', stock:90, max:250, price:10000, unit:'kg' },
+  { id:'f10', emoji:'🥝', name:'Kiwi', latin:'Actinidia deliciosa', category:'citrus', stock:60, max:180, price:65000, unit:'kg' },
+  { id:'f11', emoji:'🍑', name:'Persik', latin:'Prunus persica', category:'berry', stock:35, max:120, price:38000, unit:'kg' },
+  { id:'f12', emoji:'🍈', name:'Melon', latin:'Cucumis melo', category:'melon', stock:140, max:300, price:9500, unit:'kg' },
+];
+
+const NUTRITION = {
+  f1: { cal:52, carb:13.8, prot:0.3, fat:0.2, fiber:2.4, vitC:4.6, potassium:107 },
+  f2: { cal:47, carb:11.8, prot:0.9, fat:0.1, fiber:2.4, vitC:53.2, potassium:181 },
+  f3: { cal:89, carb:22.8, prot:1.1, fat:0.3, fiber:2.6, vitC:8.7, potassium:358 },
+  f4: { cal:67, carb:17.2, prot:0.6, fat:0.4, fiber:0.9, vitC:4.0, potassium:191 },
+  f5: { cal:60, carb:15.0, prot:0.8, fat:0.4, fiber:1.6, vitC:36.4, potassium:168 },
+  f6: { cal:30, carb:7.6, prot:0.6, fat:0.2, fiber:0.4, vitC:8.1, potassium:112 },
+  f7: { cal:32, carb:7.7, prot:0.7, fat:0.3, fiber:2.0, vitC:58.8, potassium:153 },
+  f8: { cal:57, carb:14.5, prot:0.7, fat:0.3, fiber:2.4, vitC:9.7, potassium:77 },
+  f9: { cal:50, carb:13.1, prot:0.5, fat:0.1, fiber:1.4, vitC:47.8, potassium:109 },
+  f10: { cal:61, carb:14.7, prot:1.1, fat:0.5, fiber:3.0, vitC:92.7, potassium:312 },
+  f11: { cal:39, carb:9.5, prot:0.9, fat:0.3, fiber:1.5, vitC:6.6, potassium:190 },
+  f12: { cal:34, carb:8.2, prot:0.8, fat:0.2, fiber:0.9, vitC:18.0, potassium:267 },
+};
+
+const FIFO_BATCHES = [
+  { fruit:'f3', batch:'BATCH-2025-0401', entry:'2025-04-01', expiry:'2025-04-10', qty:80, remaining:15, loc:'Rak B2', status:'critical' },
+  { fruit:'f2', batch:'BATCH-2025-0402', entry:'2025-04-02', expiry:'2025-04-15', qty:150, remaining:85, loc:'Rak A1', status:'active' },
+  { fruit:'f1', batch:'BATCH-2025-0403', entry:'2025-04-03', expiry:'2025-04-25', qty:200, remaining:120, loc:'Rak A2', status:'active' },
+  { fruit:'f5', batch:'BATCH-2025-0405', entry:'2025-04-05', expiry:'2025-04-20', qty:180, remaining:90, loc:'Rak C1', status:'active' },
+  { fruit:'f6', batch:'BATCH-2025-0406', entry:'2025-04-06', expiry:'2025-04-18', qty:200, remaining:140, loc:'Rak D1', status:'active' },
+  { fruit:'f9', batch:'BATCH-2025-0408', entry:'2025-04-08', expiry:'2025-04-22', qty:120, remaining:90, loc:'Rak C2', status:'active' },
+  { fruit:'f7', batch:'BATCH-2025-0410', entry:'2025-04-10', expiry:'2025-04-17', qty:80, remaining:45, loc:'Kulkas 1', status:'warning' },
+  { fruit:'f10', batch:'BATCH-2025-0410', entry:'2025-04-10', expiry:'2025-04-24', qty:90, remaining:60, loc:'Kulkas 2', status:'active' },
+];
+
+const DELIVERIES = [
+  { id:'DLV-001', dest:'SDN 01 Cempaka', weight:'45 kg', driver:'Budi S.', status:'moving', eta:'14:32' },
+  { id:'DLV-002', dest:'Posyandu Melati', weight:'28 kg', driver:'Ari W.', status:'arrived', eta:'14:10' },
+  { id:'DLV-003', dest:'SMPN 3 Harapan', weight:'60 kg', driver:'Dedi K.', status:'moving', eta:'15:05' },
+  { id:'DLV-004', dest:'Puskesmas Anggrek', weight:'35 kg', driver:'Sari P.', status:'pending', eta:'15:30' },
+];
+
+const PENDING_ORDERS = [
+  { id:'241', name:'SDN 04 Merdeka', qty:'30 kg', dest:'Sekolah', items:'Apel × 15, Jeruk × 15' },
+  { id:'242', name:'Posyandu Bunga', qty:'12 kg', dest:'Posyandu', items:'Pisang × 12' },
+  { id:'243', name:'SMPN 7 Nusantara', qty:'55 kg', dest:'Sekolah', items:'Mangga × 25, Semangka × 30' },
+  { id:'244', name:'Puskesmas Mawar', qty:'20 kg', dest:'Puskesmas', items:'Kiwi × 10, Stroberi × 10' },
+  { id:'245', name:'SDN 12 Bahagia', qty:'40 kg', dest:'Sekolah', items:'Apel × 20, Anggur × 20' },
+];
+
+// State
+let cart = [];
+let currentFruit = null;
+let chatOpen = false;
+let isLoggedIn = false;
+let loggedUser = '';
+let catalogFilter = 'all';
+
+// ═══════════════════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════════════════
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════
+// CATALOG
+// ═══════════════════════════════════════════════════
+
+function getStockStatus(fruit) {
+  const pct = fruit.stock / fruit.max;
+  if (fruit.stock === 0) return { cls: 'stock-out', badge: 'badge-out', label: 'HABIS' };
+  if (pct < 0.2) return { cls: 'stock-low', badge: 'badge-low', label: 'HAMPIR HABIS' };
+  return { cls: 'stock-ok', badge: 'badge-ok', label: 'TERSEDIA' };
+}
+
+function buildFruitCard(f, small = false) {
+  const status = getStockStatus(f);
+  const pct = Math.min(100, Math.round((f.stock / f.max) * 100));
+  return `
+    <div class="fruit-card" onclick="openFruitModal('${f.id}')">
+      <span class="fruit-emoji">${f.emoji}</span>
+      <div class="fruit-name">${f.name.toUpperCase()}</div>
+      <div class="fruit-latin">${f.latin}</div>
+      <div class="stock-bar"><div class="stock-bar-fill" style="width:${pct}%;background:${f.stock===0?'var(--red)':pct<20?'#ffaa00':'var(--accent)'};"></div></div>
+      <div class="fruit-meta">
+        <div class="fruit-stock ${status.cls}">${status.label} · ${f.stock} kg</div>
+        <div class="fruit-price">Rp ${(f.price/1000).toFixed(0)}k<small>/kg</small></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCatalog(filter = 'all', search = '') {
+  const grid = document.getElementById('catalog-grid');
+  const searchLow = search.toLowerCase();
+  let items = FRUITS.filter(f => {
+    const matchCat = filter === 'all' ? true :
+                     filter === 'available' ? f.stock > 0 :
+                     f.category === filter;
+    const matchSearch = !search || f.name.toLowerCase().includes(searchLow) || f.latin.toLowerCase().includes(searchLow);
+    return matchCat && matchSearch;
+  });
+  grid.innerHTML = items.map(f => buildFruitCard(f)).join('');
+  document.getElementById('catalog-count').textContent = items.length + ' item tersedia';
+}
+
+function filterCatalog() {
+  renderCatalog(catalogFilter, document.getElementById('catalog-search').value);
+}
+
+function setCatalogFilter(f, btn) {
+  catalogFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCatalog();
+}
+
+// Home stock preview (first 4)
+function renderHomeStockPreview() {
+  const grid = document.getElementById('home-stock-preview');
+  grid.innerHTML = FRUITS.slice(0, 4).map(f => buildFruitCard(f)).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// FRUIT MODAL
+// ═══════════════════════════════════════════════════
+
+function openFruitModal(id) {
+  const f = FRUITS.find(x => x.id === id);
+  const n = NUTRITION[id];
+  currentFruit = f;
+  document.getElementById('fruit-modal-name').textContent = f.emoji + ' ' + f.name.toUpperCase();
+  document.getElementById('fruit-modal-emoji').textContent = f.emoji;
+  document.getElementById('fruit-modal-latin').textContent = f.latin;
+
+  const pct = Math.min(100, Math.round((f.stock / f.max) * 100));
+  document.getElementById('fruit-modal-stock').textContent = f.stock + ' kg';
+  setTimeout(() => {
+    document.getElementById('fruit-modal-bar').style.width = pct + '%';
+    document.getElementById('fruit-modal-bar').style.background = f.stock===0?'var(--red)':pct<20?'#ffaa00':'var(--accent)';
+  }, 50);
+
+  const nutHtml = [
+    { label:'Kalori', val: n.cal + ' kcal', pct: (n.cal/120)*100 },
+    { label:'Karbo', val: n.carb + 'g', pct: (n.carb/30)*100 },
+    { label:'Protein', val: n.prot + 'g', pct: (n.prot/5)*100 },
+    { label:'Lemak', val: n.fat + 'g', pct: (n.fat/5)*100 },
+    { label:'Serat', val: n.fiber + 'g', pct: (n.fiber/10)*100 },
+    { label:'Vit C', val: n.vitC + 'mg', pct: Math.min(100,(n.vitC/100)*100) },
+  ].map(item => `
+    <div class="nutrition-item">
+      <div class="nutrition-label">${item.label}</div>
+      <div class="nutrition-value">${item.val}</div>
+      <div class="nutrition-bar"><div class="nutrition-bar-fill" style="width:0%" data-width="${item.pct}%"></div></div>
+    </div>
+  `).join('');
+  document.getElementById('fruit-modal-nutrition').innerHTML = nutHtml;
+
+  document.getElementById('qty-input').value = 5;
+  openModal('fruit-modal');
+
+  setTimeout(() => {
+    document.querySelectorAll('.nutrition-bar-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  }, 100);
+}
+
+function changeQty(delta) {
+  const input = document.getElementById('qty-input');
+  input.value = Math.max(1, parseInt(input.value || 0) + delta);
+}
+
+// ═══════════════════════════════════════════════════
+// CART
+// ═══════════════════════════════════════════════════
+
+function addToCart() {
+  const qty = parseInt(document.getElementById('qty-input').value);
+  if (!qty || qty < 1) return;
+  const f = currentFruit;
+  if (f.stock === 0) { showToast('Stok habis!', 'error'); return; }
+  const existing = cart.find(c => c.id === f.id);
+  if (existing) existing.qty += qty;
+  else cart.push({ ...f, qty });
+  updateCartUI();
+  closeModal('fruit-modal');
+  showToast(`${f.emoji} ${f.name} × ${qty}kg ditambahkan!`, 'success');
+}
+
+function updateCartUI() {
+  const count = cart.reduce((a, b) => a + b.qty, 0);
+  document.getElementById('cart-count').textContent = count;
+  const cartFloat = document.getElementById('cart-float');
+  if (cart.length > 0) cartFloat.classList.add('visible');
+  else cartFloat.classList.remove('visible');
+}
+
+function openCartModal() {
+  const container = document.getElementById('cart-items');
+  if (cart.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Keranjang kosong</div>';
+  } else {
+    container.innerHTML = cart.map((item, i) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span style="font-size:28px;">${item.emoji}</span>
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;">${item.name}</div>
+            <div style="font-size:11px;color:var(--gray);">${item.qty} kg × Rp ${item.price.toLocaleString('id')}</div>
+          </div>
+        </div>
+        <button onclick="removeFromCart(${i})" style="background:none;border:1px solid var(--red);color:var(--red);padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--font-mono);">Hapus</button>
+      </div>
+    `).join('');
+  }
+  const total = cart.reduce((a, b) => a + b.qty, 0);
+  document.getElementById('cart-total').textContent = total + ' kg';
+  openModal('cart-modal');
+}
+
+function removeFromCart(i) {
+  cart.splice(i, 1);
+  updateCartUI();
+  openCartModal();
+}
+
+function submitOrder() {
+  const name = document.getElementById('cart-customer').value;
+  const addr = document.getElementById('cart-address').value;
+  if (!name || !addr) { showToast('Lengkapi data pengiriman!', 'error'); return; }
+  if (cart.length === 0) { showToast('Keranjang masih kosong!', 'error'); return; }
+
+  const orderNum = 'MBG-' + Date.now().toString().slice(-6);
+  cart = [];
+  updateCartUI();
+  closeModal('cart-modal');
+  showToast('✅ Pesanan ' + orderNum + ' berhasil dikirim!', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+// STOCK / FIFO
+// ═══════════════════════════════════════════════════
+
+function renderFIFO() {
+  const tbody = document.getElementById('fifo-tbody');
+  const today = new Date();
+
+  let okCount = 0, lowCount = 0, outCount = 0;
+  FRUITS.forEach(f => {
+    const pct = f.stock / f.max;
+    if (f.stock === 0) outCount++;
+    else if (pct < 0.2) lowCount++;
+    else okCount++;
+  });
+
+  document.getElementById('total-items').textContent = FRUITS.length;
+  document.getElementById('stock-ok-count').textContent = okCount;
+  document.getElementById('stock-low-count').textContent = lowCount;
+  document.getElementById('stock-out-count').textContent = outCount;
+
+  tbody.innerHTML = FIFO_BATCHES.map((b, i) => {
+    const fruit = FRUITS.find(f => f.id === b.fruit);
+    const expiry = new Date(b.expiry);
+    const daysLeft = Math.ceil((expiry - today) / 86400000);
+    const isPriority = i === 0; // FIFO — first in, use first
+    let statusBadge = '<span class="badge badge-ok">AKTIF</span>';
+    if (b.status === 'critical') statusBadge = '<span class="badge badge-out">KRITIS</span>';
+    if (b.status === 'warning') statusBadge = '<span class="badge badge-warn">PERINGATAN</span>';
+
+    return `
+      <tr>
+        <td>${fruit.emoji} ${fruit.name}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">${b.batch}</td>
+        <td>${b.entry}</td>
+        <td style="color:${daysLeft <= 3 ? 'var(--red)' : daysLeft <= 7 ? '#ffaa00' : 'inherit'}">${b.expiry} <small style="color:var(--gray);">(${daysLeft}h)</small></td>
+        <td><strong>${b.remaining}</strong><span style="color:var(--gray);"> / ${b.qty}</span></td>
+        <td>${statusBadge}</td>
+        <td style="color:var(--gray);font-size:11px;">${b.loc}</td>
+        <td>${isPriority ? '<span class="fifo-tag">GUNAKAN DULU</span>' : '<span style="color:var(--gray);font-size:11px;">—</span>'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openAddStockModal() {
+  const sel = document.getElementById('stock-fruit');
+  sel.innerHTML = FRUITS.map(f => `<option value="${f.id}">${f.emoji} ${f.name}</option>`).join('');
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('stock-entry').value = today;
+  const expiry = new Date(); expiry.setDate(expiry.getDate() + 14);
+  document.getElementById('stock-expiry').value = expiry.toISOString().split('T')[0];
+  openModal('add-stock-modal');
+}
+
+function addStock() {
+  const qty = document.getElementById('stock-qty').value;
+  const batch = document.getElementById('stock-batch').value;
+  if (!qty || !batch) { showToast('Lengkapi data stok!', 'error'); return; }
+  const fruitId = document.getElementById('stock-fruit').value;
+  const fruit = FRUITS.find(f => f.id === fruitId);
+  fruit.stock = Math.min(fruit.max, fruit.stock + parseFloat(qty));
+  closeModal('add-stock-modal');
+  renderFIFO();
+  renderCatalog(catalogFilter);
+  renderHomeStockPreview();
+  showToast(`📦 Stok ${fruit.name} +${qty}kg berhasil dicatat!`, 'success');
+}
+
+// ═══════════════════════════════════════════════════
+// NUTRITION CARDS
+// ═══════════════════════════════════════════════════
+
+function renderNutrition() {
+  const grid = document.getElementById('nutrition-grid');
+  grid.innerHTML = FRUITS.map(f => {
+    const n = NUTRITION[f.id];
+    return `
+      <div class="nutrition-card">
+        <div class="nutrition-card-header">
+          <div class="nutrition-card-emoji">${f.emoji}</div>
+          <div>
+            <div class="nutrition-card-name">${f.name.toUpperCase()}</div>
+            <div class="nutrition-card-cal">${n.cal} kcal / 100g</div>
+          </div>
+        </div>
+        ${[
+          { name: 'Karbohidrat', val: n.carb + 'g', pct: (n.carb/30)*100, cls: 'nut-c' },
+          { name: 'Protein', val: n.prot + 'g', pct: (n.prot/5)*100, cls: 'nut-p' },
+          { name: 'Lemak', val: n.fat + 'g', pct: (n.fat/5)*100, cls: 'nut-f' },
+          { name: 'Serat', val: n.fiber + 'g', pct: (n.fiber/10)*100, cls: 'nut-fi' },
+          { name: 'Vitamin C', val: n.vitC + 'mg', pct: Math.min(100,(n.vitC/100)*100), cls: 'nut-vi' },
+          { name: 'Kalium', val: n.potassium + 'mg', pct: Math.min(100,(n.potassium/400)*100), cls: 'nut-c' },
+        ].map(row => `
+          <div class="nut-row">
+            <div class="nut-name">${row.name}</div>
+            <div class="nut-bar"><div class="nut-bar-fill ${row.cls}" style="width:0%" data-width="${Math.round(row.pct)}%"></div></div>
+            <div class="nut-val">${row.val}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+
+  // Animate bars when page is shown
+  setTimeout(() => {
+    document.querySelectorAll('.nut-bar-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════════
+// GPS DELIVERIES
+// ═══════════════════════════════════════════════════
+
+function renderDeliveries() {
+  const list = document.getElementById('delivery-list');
+  list.innerHTML = DELIVERIES.map(d => `
+    <div class="delivery-item">
+      <div class="delivery-id">${d.id}</div>
+      <div class="delivery-meta">Tujuan: <span>${d.dest}</span></div>
+      <div class="delivery-meta">Muatan: <span>${d.weight}</span> · Driver: <span>${d.driver}</span></div>
+      <div class="status-badge status-${d.status}">
+        <div class="status-dot"></div>
+        ${d.status === 'moving' ? 'Dalam Perjalanan' : d.status === 'arrived' ? 'Tiba' : 'Menunggu'}
+        ${d.status !== 'pending' ? '· ETA ' + d.eta : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Animate ETA
+function animateETA() {
+  const etaEl = document.getElementById('eta-value');
+  if (!etaEl) return;
+  let mins = 14 * 60 + 32;
+  setInterval(() => {
+    mins--;
+    if (mins < 0) mins = 14 * 60 + 32;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    etaEl.textContent = h + ':' + String(m).padStart(2, '0');
+  }, 10000);
+}
+
+// ═══════════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════════
+
+function renderBarChart() {
+  const chart = document.getElementById('bar-chart');
+  const days = ['1','3','5','7','9','11','13','15','17','19','20'];
+  const vals = [480, 510, 495, 530, 488, 512, 498, 525, 490, 505, 460];
+  const max = Math.max(...vals);
+  chart.innerHTML = days.map((d, i) => `
+    <div class="chart-bar${i === vals.length-1 ? ' active' : ''}">
+      <div class="chart-bar-fill" style="height:0%" data-height="${Math.round((vals[i]/max)*100)}%"></div>
+      <span class="chart-label">Apr ${d}</span>
+    </div>
+  `).join('');
+
+  setTimeout(() => {
+    document.querySelectorAll('.chart-bar-fill').forEach(el => {
+      el.style.height = el.dataset.height;
+    });
+  }, 200);
+}
+
+function renderReportTable() {
+  const tbody = document.getElementById('report-tbody');
+  const data = FRUITS.map(f => ({
+    fruit: f,
+    distributed: Math.round(Math.random() * 800 + 200),
+    weight: Math.round(Math.random() * 500 + 100),
+  }));
+  const totalDist = data.reduce((a, b) => a + b.distributed, 0);
+  tbody.innerHTML = data.map(d => {
+    const pct = Math.round((d.distributed / totalDist) * 100);
+    const status = getStockStatus(d.fruit);
+    return `
+      <tr>
+        <td>${d.fruit.emoji} ${d.fruit.name}</td>
+        <td style="font-family:var(--font-display);font-size:22px;">${d.distributed}</td>
+        <td>${d.weight} kg</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:60px;height:3px;background:rgba(255,255,255,0.08);">
+              <div style="width:${pct}%;height:100%;background:var(--accent);"></div>
+            </div>
+            ${pct}%
+          </div>
+        </td>
+        <td>${d.fruit.stock} kg</td>
+        <td><span class="badge ${status.badge}">${status.label}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function setReportMonth(m, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Menampilkan laporan ' + btn.textContent, 'success');
+}
+
+function exportReport() {
+  showToast('📊 Mengunduh CSV laporan...', 'success');
+  const rows = ['Buah,Distribusi,Berat (kg)', ...FRUITS.map(f => `${f.name},${Math.round(Math.random()*800+200)},${Math.round(Math.random()*500+100)}`)];
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'laporan-mbg-april-2025.csv'; a.click();
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════════════
+
+function renderAdminOrders() {
+  const list = document.getElementById('order-list');
+  list.innerHTML = PENDING_ORDERS.map(o => `
+    <div class="order-row">
+      <div class="order-id">#${o.id}</div>
+      <div>
+        <div style="font-weight:500;margin-bottom:2px;">${o.name}</div>
+        <div style="font-size:11px;color:var(--gray);">${o.items}</div>
+      </div>
+      <div>${o.qty}</div>
+      <div><span class="badge badge-low">${o.dest}</span></div>
+      <div class="order-actions">
+        <button class="btn-sm btn-approve" onclick="approveOrder('${o.id}', this)">✓ Proses</button>
+        <button class="btn-sm btn-reject" onclick="rejectOrder('${o.id}', this)">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function approveOrder(id, btn) {
+  const row = btn.closest('.order-row');
+  row.style.opacity = '0.4';
+  row.querySelector('.order-actions').innerHTML = '<span style="color:var(--accent);font-size:11px;">✓ Diproses</span>';
+  showToast('Pesanan #' + id + ' diproses!', 'success');
+  const count = document.getElementById('admin-pending-count');
+  count.textContent = Math.max(0, parseInt(count.textContent) - 1);
+}
+
+function rejectOrder(id, btn) {
+  const row = btn.closest('.order-row');
+  row.style.opacity = '0.3';
+  row.querySelector('.order-actions').innerHTML = '<span style="color:var(--red);font-size:11px;">✕ Ditolak</span>';
+  showToast('Pesanan #' + id + ' ditolak.', 'error');
+}
+
+// Photo upload
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
+function handleDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processUpload(file);
+}
+function handleFileSelect(e) { if (e.target.files[0]) processUpload(e.target.files[0]); }
+
+function processUpload(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const container = document.getElementById('uploaded-photos');
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;width:120px;height:90px;border:1px solid rgba(255,255,255,0.15);overflow:hidden;';
+    div.innerHTML = `
+      <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,0.7);font-size:9px;color:var(--accent);">✓ TERSIMPAN</div>
+    `;
+    container.appendChild(div);
+    showToast('📷 Foto bukti berhasil diunggah!', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function sendStaffMessage() {
+  const input = document.getElementById('staff-msg-input');
+  if (!input.value.trim()) return;
+  const container = document.getElementById('staff-messages');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:16px;align-items:flex-start;';
+  div.innerHTML = `
+    <div style="font-size:24px;">👤</div>
+    <div>
+      <div style="font-size:10px;color:var(--accent);margin-bottom:4px;">${loggedUser || 'Staff'} — ${new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'})}</div>
+      <div style="font-size:12px;">${input.value}</div>
+    </div>
+  `;
+  container.appendChild(div);
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════
+
+function openLoginModal() { openModal('login-modal'); }
+
+function doLogin() {
+  const user = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  if (user === 'admin' && pass === 'mbg2025') {
+    isLoggedIn = true;
+    loggedUser = user;
+    closeModal('login-modal');
+    showToast('✅ Selamat datang, ' + user + '!', 'success');
+    document.getElementById('admin-locked').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-username').textContent = user;
+    renderAdminOrders();
+    showPage('admin');
+  } else {
+    showToast('Username atau password salah!', 'error');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE CHAT
+// ═══════════════════════════════════════════════════
+
+const chatBotReplies = [
+  'Halo! Ada yang bisa kami bantu mengenai program MBG? 🍎',
+  'Terima kasih pertanyaannya! Silakan hubungi koordinator wilayah untuk info lebih lanjut.',
+  'Stok buah diperbarui setiap hari pukul 07.00 WIB. Pantau di halaman Katalog!',
+  'Untuk mendaftar sebagai penerima manfaat, harap menghubungi Dinas Kesehatan setempat.',
+  'Distribusi dilakukan setiap hari Senin–Sabtu. Pastikan penerima hadir untuk menerima paket.',
+];
+let chatReplyIdx = 0;
+let chatInitialized = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const panel = document.getElementById('chat-panel');
+  const notif = document.getElementById('chat-notif');
+  panel.classList.toggle('open', chatOpen);
+  if (chatOpen) {
+    notif.style.display = 'none';
+    if (!chatInitialized) {
+      chatInitialized = true;
+      addChatMsg('bot', chatBotReplies[0]);
+      chatReplyIdx = 1;
+    }
+  }
+}
+
+function addChatMsg(type, text) {
+  const container = document.getElementById('chat-messages');
+  const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.innerHTML = `<div class="chat-bubble">${text}</div><div class="chat-time">${now}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  addChatMsg('user', msg);
+  input.value = '';
+  setTimeout(() => {
+    const reply = chatBotReplies[chatReplyIdx % chatBotReplies.length];
+    addChatMsg('bot', reply);
+    chatReplyIdx++;
+  }, 800 + Math.random() * 400);
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+
+function showToast(msg, type = '') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    toast.style.transition = 'all 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ═══════════════════════════════════════════════════
+// ANIMATED COUNTERS
+// ═══════════════════════════════════════════════════
+
+function animateCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const duration = 1500;
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target).toLocaleString('id');
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCatalog();
+  renderHomeStockPreview();
+  renderFIFO();
+  renderNutrition();
+  renderDeliveries();
+  renderBarChart();
+  renderReportTable();
+  setTimeout(animateCounters, 400);
+  animateETA();
+
+  // Set today's date in stock form
+  const today = new Date().toISOString().split('T')[0];
+
+  // Login on Enter key
+  document.getElementById('login-pass').addEventListener('keypress', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('login-user').addEventListener('keypress', e => {
+    if (e.key === 'Enter') document.getElementById('login-pass').focus();
+  });
+});
+</script>
+</body>
+</html>
